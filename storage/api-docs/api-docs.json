@@ -1,0 +1,461 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "TaskStream API",
+        "description": "Dokumentasi RESTful API untuk TaskStream - Platform Manajemen Tugas dengan Fitur Real-time.",
+        "contact": {
+            "email": "admin@example.com"
+        },
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8000/api",
+            "description": "Local Development API Server"
+        }
+    ],
+    "paths": {
+        "/tasks/{taskId}/attachments": {
+            "post": {
+                "tags": [
+                    "Attachments"
+                ],
+                "summary": "Upload Attachment",
+                "description": "Unggah file lampiran untuk tugas. Mendukung standard upload (file <= 50MB) dan chunked upload (file > 50MB).",
+                "operationId": "00c7eb9124b818bc358bc61214ba8ef0",
+                "responses": {
+                    "201": {
+                        "description": "File berhasil diunggah"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/attachments/{id}/download": {
+            "get": {
+                "tags": [
+                    "Attachments"
+                ],
+                "summary": "Download / Stream Attachment",
+                "description": "Unduh berkas lampiran secara langsung. Jika berkas berupa video (e.g. MP4/WebM), mendukung pemutaran range-requests (206 Partial Content) untuk seek player.",
+                "operationId": "999ae10d9bba8983e768670cbe6adc86",
+                "responses": {
+                    "200": {
+                        "description": "Download berkas / Ranged stream partial content"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/attachments/{id}": {
+            "delete": {
+                "tags": [
+                    "Attachments"
+                ],
+                "summary": "Delete Attachment",
+                "description": "Hapus berkas lampiran beserta seluruh riwayat versi fisiknya.",
+                "operationId": "f4c4544cd9697f064ae62eaeeacafbf9",
+                "responses": {
+                    "200": {
+                        "description": "Attachment berhasil dihapus"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/auth/login": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "User Authentication (Login)",
+                "description": "Autentikasi email & password user. Mengembalikan access_token (15 menit) dan refresh_token (7 hari).",
+                "operationId": "8cb7742ae98d0990acb2907c4e00bf24",
+                "requestBody": {
+                    "description": "Kredensial login user",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "admin@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "password123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Autentikasi berhasil"
+                    },
+                    "422": {
+                        "description": "Validasi gagal atau kredensial tidak cocok"
+                    }
+                }
+            }
+        },
+        "/auth/refresh": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Silent Token Refresh",
+                "description": "Memperbarui access_token yang kedaluwarsa menggunakan refresh_token.",
+                "operationId": "f6c9683ed975ace7d035a09e6e2a9332",
+                "responses": {
+                    "200": {
+                        "description": "Token berhasil diperbarui"
+                    },
+                    "401": {
+                        "description": "Refresh token kedaluwarsa atau tidak valid"
+                    },
+                    "403": {
+                        "description": "Token tidak memiliki kemampuan issue-access-token"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/auth/me": {
+            "get": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Get Current User Profile",
+                "description": "Mengambil data profil user yang sedang masuk menggunakan access_token.",
+                "operationId": "a9c495788506b114956e3f509e5d90a2",
+                "responses": {
+                    "200": {
+                        "description": "Profil user berhasil diambil"
+                    },
+                    "403": {
+                        "description": "Token tidak memiliki kemampuan access-api"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/users": {
+            "get": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "List All Users for Task Assignment",
+                "description": "Mengambil daftar semua user terdaftar untuk pilihan drop-down tugas.",
+                "operationId": "cd529fd1eecaff3194ad0805546dd9ae",
+                "responses": {
+                    "200": {
+                        "description": "Daftar user berhasil diambil"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/auth/logout": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "User Logout",
+                "description": "Mencabut (revokes) semua token aktif untuk user tersebut.",
+                "operationId": "0d29c740dc06d77602af8095bf4654cc",
+                "responses": {
+                    "200": {
+                        "description": "Logout berhasil"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/tasks/{taskId}/comments": {
+            "get": {
+                "tags": [
+                    "Comments"
+                ],
+                "summary": "List Comments",
+                "description": "Mengambil semua komentar diskusi pada tugas tertentu.",
+                "operationId": "b042e8dd69aea532db536ef9d9630681",
+                "responses": {
+                    "200": {
+                        "description": "Daftar komentar berhasil diambil"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Comments"
+                ],
+                "summary": "Post Comment",
+                "description": "Menambahkan komentar baru ke tugas. Memicu reload real-time di client lain.",
+                "operationId": "9f2bcc61453c4015a533d46b248979bc",
+                "responses": {
+                    "201": {
+                        "description": "Komentar berhasil ditambahkan"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/tasks/{taskId}/comments/typing": {
+            "post": {
+                "tags": [
+                    "Real-time Sync"
+                ],
+                "summary": "Trigger Typing State",
+                "description": "Mempublikasikan indikator bahwa user saat ini sedang aktif mengetik di input kolom tugas ini.",
+                "operationId": "94066d700ffbf8ff2d17901d57379fd6",
+                "responses": {
+                    "200": {
+                        "description": "Indikator terkirim"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/tasks": {
+            "get": {
+                "tags": [
+                    "Tasks"
+                ],
+                "summary": "List Tasks",
+                "description": "Mengambil daftar tugas dengan filtrasi, pengurutan, dan paginasi menggunakan Spatie Query Builder.",
+                "operationId": "6a93d54730cde509d735e538ab6800f6",
+                "responses": {
+                    "200": {
+                        "description": "Daftar tugas berhasil diambil"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Tasks"
+                ],
+                "summary": "Create New Task",
+                "description": "Membuat tugas baru dan menetapkan ke pengguna.",
+                "operationId": "9b481c0ed5fdfa1a592d70ba39a348ee",
+                "responses": {
+                    "201": {
+                        "description": "Task berhasil dibuat"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/tasks/{id}": {
+            "get": {
+                "tags": [
+                    "Tasks"
+                ],
+                "summary": "Get Task Details",
+                "description": "Mengambil detail tugas lengkap dengan lampiran berkas, versi berkas sebelumnya, dan komentar real-time.",
+                "operationId": "fd3677b5b24695d7b801715869b1357c",
+                "responses": {
+                    "200": {
+                        "description": "Detail tugas berhasil diambil"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Tasks"
+                ],
+                "summary": "Update Task",
+                "description": "Memperbarui status, prioritas, delegasi, tenggat waktu, atau isi deskripsi tugas.",
+                "operationId": "85377ff0e935f093dd75ea6886923dbc",
+                "responses": {
+                    "200": {
+                        "description": "Task berhasil diperbarui"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Tasks"
+                ],
+                "summary": "Delete Task",
+                "description": "Menghapus tugas dari sistem beserta semua komentar dan berkas lampirannya.",
+                "operationId": "5ed5dfd4c645e9398f4282969bfe6478",
+                "responses": {
+                    "200": {
+                        "description": "Task berhasil dihapus"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/tasks/bulk": {
+            "post": {
+                "tags": [
+                    "Tasks"
+                ],
+                "summary": "Bulk Update Tasks Status",
+                "description": "Memperbarui status beberapa tugas sekaligus menggunakan background database queue.",
+                "operationId": "a8254cfa77d622e806de2211443a6ebe",
+                "responses": {
+                    "200": {
+                        "description": "Bulk update berhasil dijadwalkan di antrian"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/tasks/export": {
+            "post": {
+                "tags": [
+                    "Tasks"
+                ],
+                "summary": "Export Tasks to CSV",
+                "description": "Memicu pengeksporan semua data tugas ke format CSV di latar belakang (queue) dan mengembalikan link download.",
+                "operationId": "874cec41490544bb718a99852e3dc8ba",
+                "responses": {
+                    "200": {
+                        "description": "Ekspor berhasil diproses di antrian"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/tasks/events": {
+            "get": {
+                "tags": [
+                    "Real-time Sync"
+                ],
+                "summary": "Real-time Events Stream (SSE)",
+                "description": "Koneksi Server-Sent Events (SSE) persisten untuk mengirim pembaruan live status tugas, presence daftar online users, dan typing indicators.",
+                "operationId": "c6278cf7f388c181272a826c0a2d0e65",
+                "responses": {
+                    "200": {
+                        "description": "Terhubung ke event stream"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "description": "Gunakan bearer access_token yang didapatkan dari login.",
+                "bearerFormat": "JWT",
+                "scheme": "bearer"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Attachments",
+            "description": "Attachments"
+        },
+        {
+            "name": "Authentication",
+            "description": "Authentication"
+        },
+        {
+            "name": "Users",
+            "description": "Users"
+        },
+        {
+            "name": "Comments",
+            "description": "Comments"
+        },
+        {
+            "name": "Real-time Sync",
+            "description": "Real-time Sync"
+        },
+        {
+            "name": "Tasks",
+            "description": "Tasks"
+        }
+    ]
+}
