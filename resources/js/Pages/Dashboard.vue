@@ -1,6 +1,6 @@
 <template>
   <div class="min-h-screen bg-slate-50 flex flex-col font-sans pb-28 overflow-x-hidden relative">
-    
+
     <!-- Header -->
     <header class="p-6 pb-4 relative z-10 animate-in">
       <div class="flex justify-between items-center mb-6">
@@ -46,15 +46,15 @@
       </div>
 
       <div class="space-y-4">
-        
+
         <div v-if="recent_tasks.length === 0" class="text-center py-8 text-slate-400 font-medium bg-white rounded-2xl border border-gray-100 border-dashed">
           Belum ada tugas terbaru.
         </div>
-        
+
         <!-- Task Items Loop -->
-        <Link 
-          v-for="task in recent_tasks" 
-          :key="task.id" 
+        <Link
+          v-for="task in recent_tasks"
+          :key="task.id"
           :href="`/tasks/${task.id}/edit`"
           class="premium-card p-6 flex flex-col group hover:border-blue-200 transition-all cursor-pointer block"
         >
@@ -90,7 +90,7 @@
           <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="currentColor" stroke="none" class="lucide lucide-home"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
         </div>
       </Link>
-      
+
       <Link href="/tasks" class="flex flex-col items-center p-2 text-slate-400 hover:text-slate-700 transition-colors group">
         <div class="p-1.5 rounded-xl group-hover:bg-slate-100 transition-colors">
           <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clipboard-list"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg>
@@ -167,9 +167,17 @@ const showGoodbyeModal = ref(false)
 const confirmLogout = () => {
     showLogoutModal.value = false
     showGoodbyeModal.value = true
-    
+
     setTimeout(() => {
         router.post(route('logout'))
     }, 1500)
+}
+</script>
+
+<script>
+import QuixlabLayout from '@/Layouts/QuixlabLayout.vue'
+
+export default {
+    layout: QuixlabLayout
 }
 </script>
