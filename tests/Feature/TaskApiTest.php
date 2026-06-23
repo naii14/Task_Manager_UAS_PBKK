@@ -18,8 +18,9 @@ class TaskApiTest extends TestCase
     {
         parent::setUp();
 
-        // Seed Spatie roles
-        $this->artisan('db:seed');
+        // Ensure Spatie roles exist (guard web)
+        $this->artisan('db:seed', ['--class' => \Database\Seeders\SpatieRolesSeeder::class]);
+
 
         $this->user = User::create([
             'name' => 'Test User',
@@ -27,7 +28,7 @@ class TaskApiTest extends TestCase
             'password' => Hash::make('password123'),
             'role' => 'Tenaga Teknik'
         ]);
-        
+
         $this->user->assignRole('Tenaga Teknik');
     }
 
@@ -63,7 +64,7 @@ class TaskApiTest extends TestCase
         $response = $this->getJson('/api/tasks', [
             'Authorization' => 'Bearer ' . $accessToken
         ]);
-        
+
         $response->assertStatus(200);
     }
 
@@ -77,7 +78,7 @@ class TaskApiTest extends TestCase
         $response = $this->getJson('/api/tasks', [
             'Authorization' => 'Bearer ' . $refreshToken
         ]);
-        
+
         $response->assertStatus(403);
     }
 

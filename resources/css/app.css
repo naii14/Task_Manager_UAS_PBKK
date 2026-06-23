@@ -55,6 +55,10 @@
   }
 }
 
+/* Theme import (keep before Tailwind utilities for PostCSS/Vite) */
+@import 'public/assets/theme/css/style.css';
+
+
 /* Premium utility classes */
 @layer utilities {
   .premium-shadow {
@@ -93,4 +97,3 @@
   }
 }
 
-@import '/public/assets/theme/css/style.css';

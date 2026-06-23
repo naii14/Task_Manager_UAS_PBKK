@@ -1,5 +1,7 @@
 <template>
-  <div class="min-h-screen bg-slate-50 flex flex-col font-sans pb-28 overflow-x-hidden relative">
+  <DashboardLayout>
+    <div class="min-h-screen bg-slate-50 flex flex-col font-sans pb-28 overflow-x-hidden relative">
+
 
     <!-- Header -->
     <header class="p-6 pb-4 relative z-10 animate-in">
@@ -148,36 +150,186 @@
         <p class="text-[14px] text-slate-500 font-medium">Sesi Anda telah berakhir dengan aman. Semoga harimu menyenangkan!</p>
       </div>
     </div>
-  </div>
+    </div>
+  </DashboardLayout>
 </template>
 
 <script setup>
 import { Link, router } from '@inertiajs/vue3'
-import { ref } from 'vue'
+import { onBeforeUnmount, onMounted, reactive, ref } from 'vue'
+import { Chart } from 'chart.js/auto'
+
+import DashboardLayout from '@/Layouts/DashboardLayout.vue'
 
 const props = defineProps({
-  tasks_proses: Number,
-  tasks_selesai: Number,
-  recent_tasks: Array
+  tasks_proses: { type: Number, default: 0 },
+  tasks_selesai: { type: Number, default: 0 },
+  recent_tasks: { type: Array, default: () => [] },
 })
+
+// Keep existing required props usage:
+// - tasks_proses
+// - tasks_selesai
+// - recent_tasks
 
 const showLogoutModal = ref(false)
 const showGoodbyeModal = ref(false)
 
 const confirmLogout = () => {
-    showLogoutModal.value = false
-    showGoodbyeModal.value = true
+  showLogoutModal.value = false
+  showGoodbyeModal.value = true
 
-    setTimeout(() => {
-        router.post(route('logout'))
-    }, 1500)
+  setTimeout(() => {
+    router.post(route('logout'))
+  }, 1500)
 }
+
+// ===== Todo (preserve removeTodo + statusStyle requirements) =====
+const todo_items = reactive([
+  { id: 1, title: 'Kumpul Laporan Praktikum', done: true },
+  { id: 2, title: 'Submit Tugas Mandiri', done: true },
+  { id: 3, title: 'Buat Outline Presentasi Minggu Ini', done: false },
+])
+
+function removeTodo(id) {
+  const idx = todo_items.findIndex((x) => x.id === id)
+  if (idx >= 0) todo_items.splice(idx, 1)
+}
+
+function statusStyle(status) {
+  if (status === 'Proses') {
+    return 'background: rgba(234,179,8,0.15); color:#B45309; border: 1px solid rgba(234,179,8,0.25);'
+  }
+  if (status === 'Selesai') {
+    return 'background: rgba(34,197,94,0.15); color:#15803D; border: 1px solid rgba(34,197,94,0.25);'
+  }
+  if (status === 'Tertunda') {
+    return 'background: rgba(239,68,68,0.15); color:#B91C1C; border: 1px solid rgba(239,68,68,0.25);'
+  }
+  return 'background: rgba(148,163,184,0.15); color:#475569; border: 1px solid rgba(148,163,184,0.25);'
+}
+
+// ===== Charts (Fix initialization for salesAreaChart & orderBarChart) =====
+const salesAreaCanvas = ref(null)
+const orderBarCanvas = ref(null)
+
+let salesAreaChart = null
+let orderBarChart = null
+
+function buildGradient(ctx, areaHeight, stops) {
+  const g = ctx.createLinearGradient(0, 0, 0, areaHeight)
+  stops.forEach((s) => g.addColorStop(s.pos, s.color))
+  return g
+}
+
+function renderCharts() {
+  // Avoid double init
+  salesAreaChart?.destroy()
+  orderBarChart?.destroy()
+
+  if (!salesAreaCanvas.value || !orderBarCanvas.value) return
+
+  const salesCtx = salesAreaCanvas.value.getContext('2d')
+  const orderCtx = orderBarCanvas.value.getContext('2d')
+
+  // ---- salesAreaChart (Area) ----
+  const salesHeight = salesAreaCanvas.value.height || 120
+  const salesGradient = buildGradient(salesCtx, salesHeight, [
+    { pos: 0, color: 'rgba(59, 130, 246, 0.45)' },
+    { pos: 0.6, color: 'rgba(59, 130, 246, 0.18)' },
+    { pos: 1, color: 'rgba(59, 130, 246, 0.00)' },
+  ])
+
+  salesAreaChart = new Chart(salesCtx, {
+    type: 'line',
+    data: {
+      labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+      datasets: [
+        {
+          label: 'Sales',
+          data: [12, 19, 15, 22, 18, 24, 20],
+          borderColor: 'rgba(59, 130, 246, 1)',
+          backgroundColor: salesGradient,
+          borderWidth: 2,
+          tension: 0.35,
+          fill: true,
+          pointRadius: 0,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { enabled: true },
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { display: false } },
+        y: { grid: { color: 'rgba(15,23,42,0.06)' }, ticks: { display: false } },
+      },
+    },
+  })
+
+  // ---- orderBarChart (Bar) ----
+  const orderHeight = orderBarCanvas.value.height || 140
+  const barGradient = buildGradient(orderCtx, orderHeight, [
+    { pos: 0, color: 'rgba(99, 102, 241, 0.65)' },
+    { pos: 1, color: 'rgba(99, 102, 241, 0.10)' },
+  ])
+
+  orderBarChart = new Chart(orderCtx, {
+    type: 'bar',
+    data: {
+      labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+      datasets: [
+        {
+          label: 'Orders',
+          data: [10, 18, 14, 22],
+          backgroundColor: barGradient,
+          borderColor: 'rgba(99, 102, 241, 1)',
+          borderWidth: 1,
+          borderRadius: 10,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { color: 'rgba(15,23,42,0.55)' },
+        },
+        y: {
+          grid: { color: 'rgba(15,23,42,0.06)' },
+          ticks: { display: false },
+        },
+      },
+    },
+  })
+}
+
+onMounted(() => {
+  renderCharts()
+})
+
+onBeforeUnmount(() => {
+  salesAreaChart?.destroy()
+  orderBarChart?.destroy()
+})
 </script>
 
-<script>
-import QuixlabLayout from '@/Layouts/QuixlabLayout.vue'
-
-export default {
-    layout: QuixlabLayout
+<style scoped>
+/* Existing UI uses Tailwind classes; keep minimal local styles for layout safety */
+:deep(.bb-chart-area),
+:deep(.bb-panel-body) {
+  min-height: 120px;
 }
-</script>
+</style>
+
+
+
