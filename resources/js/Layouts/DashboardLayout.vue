@@ -316,7 +316,7 @@ const lang = ref('id')
 }
 
 .bb-sidebar.bb-sidebar--collapsed {
-  width: 92px;
+  width: 55px;
 }
 
 .bb-nav-list {
